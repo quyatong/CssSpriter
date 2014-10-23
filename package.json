@@ -1,0 +1,31 @@
+{
+  "name": "css-spriter",
+  "version": "0.0.0",
+  "description": "css sprite tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quyatong/CssSpriter.git"
+  },
+  "bin": {
+    "css-spriter": "./bin/cli"
+  },
+  "author": "quyatong@126.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quyatong/CssSpriter/issues"
+  },
+  "homepage": "https://github.com/quyatong/CssSpriter",
+  "dependencies": {
+    "css": "^2.1.0",
+    "image-size": "^0.3.5",
+    "pngjs": "^0.4.0",
+    "rework": "^1.0.1",
+    "rework-plugin-colors": "^1.0.3",
+    "underscore": "^1.7.0",
+    "when": "^3.5.0"
+  }
+}
