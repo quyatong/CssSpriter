@@ -23,7 +23,8 @@ var CssSpriter = function (filePath, newFilePath) {
     // 根据bkInfos生成imgInfos
     var imgInfos = nesting(convert(bkInfos, filePath));
     var imgFileName = path.basename(filePath, path.extname(filePath));
-    var imgFilePath = path.dirname(filePath)+ '/' + + 'sprite-' + imgFileName + '.png';
+    imgFileName = 'sprite-' + imgFileName + '.png';
+    var imgFilePath = path.dirname(filePath)+ '/' + imgFileName;
 
     if (!imgInfos.length) {
         console.log('This file don\'t need css sprite!');
@@ -35,7 +36,7 @@ var CssSpriter = function (filePath, newFilePath) {
         function (imgInfos) {
 
             // 生成css文件
-            cssCreator(ast, imgInfos, newFilePath, imgFilePath);
+            cssCreator(ast, imgInfos, newFilePath, imgFileName);
 
             // 将图片的信息告诉外界
             promise.resolve(imgInfos);
