@@ -106,8 +106,9 @@ GrowingPacker.prototype = {
      return this.growRight(width, height);
     else if (canGrowDown)
       return this.growDown(width, height);
-    else
+    else {
       return null; // need to ensure sensible root starting size to avoid this happening
+    }
   },
 
   growRight: function(width, height) {

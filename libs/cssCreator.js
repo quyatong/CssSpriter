@@ -22,8 +22,7 @@ var cssCreator = function (ast, imgInfos, filePath, imgFilePath) {
             }
         );
     });
-
-    fs.writeFileSync(path.dirname(filePath) + '/index-release.css', css.stringify(ast));
+    fs.writeFileSync(filePath, css.stringify(ast));
 };
 
 

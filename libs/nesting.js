@@ -12,8 +12,11 @@ var nesting = function (imgInfos) {
     // 复制 去重 排序
     var nestingImgInfos = _.chain([])
         .extend(imgInfos)
+        .uniq(function (item) {
+            return item.path;
+        })
         .sortBy(function (item) {
-            return item.height;
+            return -item.height;
         })
         .value();
 

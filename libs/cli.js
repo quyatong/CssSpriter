@@ -17,11 +17,13 @@ exports.parse = function ( args ) {
 
     // 无参数时显示默认信息
     if ( args.length === 0 ) {
-        console.log('--usage:   CssSpriter <file>');
-        console.log('--example: CssSpriter index.css');
+        console.log('--usage:   CssSpriter <file> <new file>');
+        console.log('--example: CssSpriter index.css index-release.css');
         return;
     }
 
     var filePath = path.resolve(args[0]);
-    CssSpriter(filePath);
+    var newFilePath = (args[1] && path.resolve(args[1])) || filePath;
+
+    CssSpriter(filePath, newFilePath);
 };

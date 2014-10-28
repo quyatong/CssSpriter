@@ -9,10 +9,11 @@ var when = require('when');
 /**
  * CssSpriter
  * 
- * @param  {Object} path     路径
- * @return {Promise}         promise
+ * @param  {String}     path     路径
+ * @param  {String}     path     路径
+ * @return {Promise}             promise
  */
-var CssSpriter = function (filePath) {
+var CssSpriter = function (filePath, newFilePath) {
     var promise = when.defer();
 
     // 分析css文件，获取有背景的node
@@ -24,16 +25,23 @@ var CssSpriter = function (filePath) {
     var imgFileName = path.basename(filePath, path.extname(filePath));
     var imgFilePath = 'sprite-' + imgFileName + '.png';
 
+    if (!imgInfos.length) {
+        console.log('This file don\'t need css sprite!');
+        return promise.promise;
+    }
+
     // 生成合并图片
-    combine(imgInfos, imgFilePath).then(function () {
+    combine(imgInfos, imgFilePath).then(
+        function (imgInfos) {
 
-        // 生成css文件
-        cssCreator(ast, imgInfos, filePath, imgFilePath);
+            // 生成css文件
+            cssCreator(ast, imgInfos, newFilePath, imgFilePath);
 
-        // 将图片的信息告诉外界
-        promise.resolve(imgInfos);
+            // 将图片的信息告诉外界
+            promise.resolve(imgInfos);
 
-    });
+        }
+    );
 
     return promise.promise;
 };
