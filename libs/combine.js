@@ -27,33 +27,58 @@ function combine(imgInfos, path) {
                 x = 0;
             }
             else if (x == 'center') {
-                x = (imgInfo.width - imgInfo.orginWidth) / 2;
+                x = parseInt((imgInfo.width - imgInfo.originWidth) / 2, 10);
             }
             else if (x == 'right') {
-                x = imgInfo.width - imgInfo.orginWidth;
+                x = imgInfo.width - imgInfo.originWidth;
+            }
+            else {
+                x = x - 0;
             }
 
             if (y == 'top') {
                 y = 0;
             }
             else if (y == 'center') {
-                y = (imgInfo.height - imgInfo.orginHeight) / 2;
+                y = parseInt((imgInfo.height - imgInfo.originHeight) / 2, 10);
             }
             else if (y == 'bottom') {
-                y = imgInfo.height - imgInfo.orginHeight;
+                y = imgInfo.height - imgInfo.originHeight;
+            }
+            else {
+                y = y - 0;
             }
 
-            x += imgInfo.fit.x;
-            y += imgInfo.fit.y;
 
-            imgInfo.x = x;
-            imgInfo.y = y;
+
+            imgInfo.x = imgInfo.fit.x;
+            imgInfo.y = imgInfo.fit.y;
+
+            var width;
+            if (imgInfo.width >= (imgInfo.originWidth + x)) {
+                width = imgInfo.originWidth;
+            }
+            else {
+                width = imgInfo.width - x;
+            }
+
+
+            var height;
+            if (imgInfo.height >= (imgInfo.originHeight + y)) {
+                height = imgInfo.originHeight;
+            }
+            else {
+                height = imgInfo.height - y;
+            }
+
+            x += (imgInfo.fit.x);
+            y += (imgInfo.fit.y);
 
             // 对图片进行填充
             imgInfo.image.bitblt(
                 png,
                 0, 0, 
-                imgInfo.originWidth, imgInfo.originHeight,
+                width, height,
                 x, y
             );
         });

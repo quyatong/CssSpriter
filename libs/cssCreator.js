@@ -4,7 +4,7 @@ var _ = require('underscore');
 var path = require('path');
 
 
-var cssCreator = function (ast, imgInfos, filePath, imgFilePath) {
+var cssCreator = function (ast, imgInfos, filePath, imgFilePath, png8FileName) {
 
     _.each(imgInfos, function (imgInfo) {
 
@@ -14,7 +14,7 @@ var cssCreator = function (ast, imgInfos, filePath, imgFilePath) {
                 "type": "declaration",
                 "property": "background-image",
                 "value": 'url("' + imgFilePath + '")'
-            },
+            },            
             {
                 "type": "declaration",
                 "property": "background-position",
@@ -22,6 +22,7 @@ var cssCreator = function (ast, imgInfos, filePath, imgFilePath) {
             }
         );
     });
+
     fs.writeFileSync(filePath, css.stringify(ast));
 };
 

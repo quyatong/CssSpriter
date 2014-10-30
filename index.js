@@ -2,6 +2,7 @@ var analyser = require('./libs/analyser');
 var combine  = require('./libs/combine');
 var convert  = require('./libs/convert');
 var nesting  = require('./libs/nesting');
+var convertToPng8  = require('./libs/convertToPng8');
 var cssCreator = require('./libs/cssCreator');
 var path = require('path');
 var when = require('when');
@@ -35,12 +36,14 @@ var CssSpriter = function (filePath, newFilePath) {
     combine(imgInfos, imgFilePath).then(
         function (imgInfos) {
 
-            // 生成css文件
-            cssCreator(ast, imgInfos, newFilePath, imgFileName);
+            // convertToPng8(imgFilePath).then(function (ie6ImgFilePath) {
+                
+                // 生成css文件
+                cssCreator(ast, imgInfos, newFilePath, imgFileName);
 
-            // 将图片的信息告诉外界
-            promise.resolve(imgInfos);
-
+                // 将图片的信息告诉外界
+                promise.resolve(imgInfos);
+            // });
         }
     );
 

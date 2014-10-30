@@ -53,24 +53,35 @@ var getBkInfo = function (rules) {
             'background-repeat': ''
         };
         
+        var optionStr = '';
+
         _.each(bkgrdDcrs, function (declaration) {
+            
+            var value = declaration.value.replace(
+                /(url\(\s*(['"])?.*?)(#[^#].*)*(\2\s*\))/, 
+                function (match, start, quotation, params, end) {
+                optionStr = params || '';
+                return start + end;
+            });
 
             switch (declaration.property) {
                 case 'background':
-                    var value = declaration.value;
+
                     background = {
                         'background-image': (/\s*(url\(.*?\))\s*/.exec(value) || [])[1] || '',
-                        'background-color': (/\s*(#\S*|rgba\(.*?\))\s*/.exec(value) || [])[1] || '',
+                        'background-color': (/\s*(#[0-9a-fA-F]*|rgba\(.*?\))\s*/.exec(value) || [])[1] || '',
                         'background-position': (/\s*((left|center|right|\d+(px)?)\s*(top|bottom|center|\d+(px)?))\s*/.exec(value) || [])[1] || '0 0',
-                        'background-repeat': (/(repeat-x|repeat-y|repeat)/.exec(value) || [])[1] || ''
+                        'background-repeat': (/(repeat-x|repeat-y|no-repeat|repeat)/.exec(value) || [])[1] || ''
                     };
+
                     break;
                 default:
+
                     background[declaration.property] = declaration.value;
                     break;
             }
         });
-
+        
         // 处理完成后如果有image，放入图片中
         var bkimg = background['background-image'];
 
@@ -82,13 +93,12 @@ var getBkInfo = function (rules) {
                 return;
             }
 
-            var options = url.match(/#[^#]*/g);
-
             url = url.replace(/#.*/g, '');
-            options = _.map(options, function (option) {
-                return option.replace('#', '');
+            var options = [];
+            optionStr.replace(/#([^#]*)/g, function (match, option) {
+                options.push(option);
+                return match;
             });
-
             _.each(bkgrdDcrs, function (declaration) {
                 rule.declarations.splice(rule.declarations.indexOf(declaration), 1);
             });
@@ -98,6 +108,7 @@ var getBkInfo = function (rules) {
                 rule: rule,
                 properties: analyseOptions(background, options)
             });
+
         }
     });
     return bkInfos;
@@ -112,26 +123,23 @@ var getBkInfo = function (rules) {
 var analyseOptions = function (background, options) {
     var properties = {};
 
-    _.each(background, function (property) {
-
+    _.each(background, function (value, property) {
         switch (property) {
             
             // 背景位置
             case 'background-position':
-                var x = background[property].split(/\s+/)[0];
-                var y = background[property].split(/\s+/)[1];
+                var x = value.split(/\s+/)[0];
+                var y = value.split(/\s+/)[1];
 
                 properties.position = {
                     x: x,
                     y: y
                 };
-
                 break;
 
             // 重复方向
             case 'background-repeat':
-                var repeatValue = background[property];
-                
+                var repeatValue = value;
                 if (repeatValue == 'repeat-x') {
                     properties.repeatX = true;
                 }
@@ -150,7 +158,7 @@ var analyseOptions = function (background, options) {
     });
 
     _.each(options, function (option) {
-            
+
         // e.g. 15*16 确定容器大小
         if(/\d*\*\d*/.test(option)) {
             properties.dimension = {
@@ -159,7 +167,7 @@ var analyseOptions = function (background, options) {
             };
         }
         // 不合并
-        else if(/(nocombine|repeat)/.test(option)) {
+        else if(/(nocombine)/.test(option)) {
             properties.nocombine = true;
         }
         // repeat-x
@@ -182,9 +190,6 @@ var analyseOptions = function (background, options) {
         }
 
     });
-
-    
-
     return properties;
 };
 
