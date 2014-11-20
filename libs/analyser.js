@@ -85,7 +85,7 @@ var getBkInfo = function (rules) {
         // 处理完成后如果有image，放入图片中
         var bkimg = background['background-image'];
 
-        if (bkimg) {
+        if (bkimg && /\s*url\(\s*(['"]?)(.*?)\1\s*\)\s*/.test(bkimg)) {
 
             var url = /\s*url\(\s*(['"]?)(.*?)\1\s*\)\s*/.exec(bkimg)[2];
             
@@ -108,7 +108,6 @@ var getBkInfo = function (rules) {
                 rule: rule,
                 properties: analyseOptions(background, options)
             });
-
         }
     });
     return bkInfos;

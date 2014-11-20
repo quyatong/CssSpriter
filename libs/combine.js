@@ -33,7 +33,7 @@ function combine(imgInfos, path) {
                 x = imgInfo.width - imgInfo.originWidth;
             }
             else {
-                x = x - 0;
+                x = parseInt(x) - 0;
             }
 
             if (y == 'top') {
@@ -46,7 +46,7 @@ function combine(imgInfos, path) {
                 y = imgInfo.height - imgInfo.originHeight;
             }
             else {
-                y = y - 0;
+                y = parseInt(y) - 0;
             }
 
 
@@ -62,7 +62,6 @@ function combine(imgInfos, path) {
                 width = imgInfo.width - x;
             }
 
-
             var height;
             if (imgInfo.height >= (imgInfo.originHeight + y)) {
                 height = imgInfo.originHeight;
@@ -73,7 +72,7 @@ function combine(imgInfos, path) {
 
             x += (imgInfo.fit.x);
             y += (imgInfo.fit.y);
-
+            
             // 对图片进行填充
             imgInfo.image.bitblt(
                 png,
