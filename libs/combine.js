@@ -15,7 +15,6 @@ function combine(imgInfos, path) {
 
     // 将所有图片写入内存
     createAllPngs(imgInfos).then(function (imgInfos) {
-
         // 根据一组数组的大小创建适合宽高的png图片
         var png = createFitPng(imgInfos);
 
@@ -48,8 +47,6 @@ function combine(imgInfos, path) {
             else {
                 y = parseInt(y) - 0;
             }
-
-
 
             imgInfo.x = imgInfo.fit.x;
             imgInfo.y = imgInfo.fit.y;

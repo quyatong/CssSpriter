@@ -8,8 +8,17 @@ var _ = require('underscore');
  * @param  {string} filePath css文件路径
  */
 var analyseCss = function (filePath) {
-
     var fileData = fs.readFileSync(filePath, {encoding: 'utf8'});
+    return analyseCssData(fileData);
+};
+
+
+/**
+ * 分析CSS内容
+ * 
+ * @param  {string} fileData css文件内容
+ */
+var analyseCssData = function (fileData) {
     var ast = css.parse(fileData);
     var rules = ast.stylesheet.rules;
     var trueRules = _.where(rules, {type: 'rule'});
@@ -17,7 +26,7 @@ var analyseCss = function (filePath) {
     ast.bkInfos = getBkInfo(trueRules);
 
     return ast;
-};
+}
 
 /**
  * 根据CSS RULES 分析
@@ -70,7 +79,7 @@ var getBkInfo = function (rules) {
                     background = {
                         'background-image': (/\s*(url\(.*?\))\s*/.exec(value) || [])[1] || '',
                         'background-color': (/\s*(#[0-9a-fA-F]*|rgba\(.*?\))\s*/.exec(value) || [])[1] || '',
-                        'background-position': (/\s*((left|center|right|\d+(px)?)\s*(top|bottom|center|\d+(px)?))\s*/.exec(value) || [])[1] || '0 0',
+                        'background-position': (/\s*((left|center|right|\d*px|0)?)\s*(top|bottom|center|\d*px|0)\s*/.exec(value) || [])[1] || '0 0',
                         'background-repeat': (/(repeat-x|repeat-y|no-repeat|repeat)/.exec(value) || [])[1] || ''
                     };
 
@@ -89,7 +98,7 @@ var getBkInfo = function (rules) {
 
             var url = /\s*url\(\s*(['"]?)(.*?)\1\s*\)\s*/.exec(bkimg)[2];
             
-            if (/http/.test(url)) {
+            if (/http/.test(url) || /^\/\//.test(url)) {
                 return;
             }
 
@@ -108,7 +117,7 @@ var getBkInfo = function (rules) {
                 });
                 
                 bkInfos.push({
-                    url: url,
+                    url: url.replace(/\?.*/g, ''),
                     rule: rule,
                     properties: properties
                 });
@@ -199,4 +208,5 @@ var analyseOptions = function (background, options) {
 };
 
 
-exports.analyseCss = exports = analyseCss;
+exports.analyseCss = analyseCss;
+exports.analyseCssData = analyseCssData

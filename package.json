@@ -1,6 +1,6 @@
 {
   "name": "css-spriter",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "css sprite tool",
   "main": "index.js",
   "scripts": {
