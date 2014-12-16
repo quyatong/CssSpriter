@@ -99,17 +99,23 @@ var getBkInfo = function (rules) {
                 options.push(option);
                 return match;
             });
-            _.each(bkgrdDcrs, function (declaration) {
-                rule.declarations.splice(rule.declarations.indexOf(declaration), 1);
-            });
 
-            bkInfos.push({
-                url: url,
-                rule: rule,
-                properties: analyseOptions(background, options)
-            });
+            var properties = analyseOptions(background, options);
+
+            if (!(properties.repeatX || properties.repeatY || properties.nocombine)) {
+                _.each(bkgrdDcrs, function (declaration) {
+                    rule.declarations.splice(rule.declarations.indexOf(declaration), 1);
+                });
+                
+                bkInfos.push({
+                    url: url,
+                    rule: rule,
+                    properties: properties
+                });
+            }
         }
     });
+
     return bkInfos;
 };
 

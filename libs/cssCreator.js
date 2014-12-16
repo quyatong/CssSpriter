@@ -7,7 +7,6 @@ var path = require('path');
 var cssCreator = function (ast, imgInfos, filePath, imgFilePath, png8FileName) {
     var version = (new Date()).getTime();
     _.each(imgInfos, function (imgInfo) {
-
         // 将各种background属性塞进去
         imgInfo.rule.declarations.push(
             {
