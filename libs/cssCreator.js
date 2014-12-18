@@ -12,12 +12,12 @@ var cssHandler = function (ast, imgInfos, imgFilePath) {
             {
                 "type": "declaration",
                 "property": "background-image",
-                "value": 'url("' + imgFilePath + '?ver=' + version + '")'
+                "value": 'url("' + imgFilePath + '#' + imgInfo.width + '*' + imgInfo.height + '?ver=' + version + '")'
             },            
             {
                 "type": "declaration",
                 "property": "background-position",
-                "value": '-' + imgInfo.x + 'px ' + '-' + imgInfo.y + 'px'
+                "value": '-' + imgInfo.fit.x + 'px ' + '-' + imgInfo.fit.y + 'px'
             }
         );
     });

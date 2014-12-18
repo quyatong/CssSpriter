@@ -1,5 +1,7 @@
 var fs = require('fs');
+var path = require('path');
 var css = require('css');
+var sizeOf = require('image-size');
 var _ = require('underscore');
 
 /**
@@ -9,23 +11,24 @@ var _ = require('underscore');
  */
 var analyseCss = function (filePath) {
     var fileData = fs.readFileSync(filePath, {encoding: 'utf8'});
-    return analyseCssData(fileData);
-};
 
+    return analyseCssData(fileData, filePath);
+};
 
 /**
  * 分析CSS内容
  * 
  * @param  {string} fileData css文件内容
  */
-var analyseCssData = function (fileData) {
+var analyseCssData = function (fileData, filePath) {
     var ast = css.parse(fileData);
     var rules = ast.stylesheet.rules;
     var trueRules = _.where(rules, {type: 'rule'});
 
-    ast.bkInfos = getBkInfo(trueRules);
-
-    return ast;
+    return {
+        ast: ast,
+        imgInfos: getImgInfos(trueRules, filePath)
+    };
 }
 
 /**
@@ -34,9 +37,9 @@ var analyseCssData = function (fileData) {
  * @param  {Array} rules  ast rules
  * @return {Array}        图片信息数组
  */
-var getBkInfo = function (rules) {
+var getImgInfos = function (rules, filePath) {
 
-    var bkInfos = [];
+    var imgInfos = [];
     _.each(rules, function (rule) {
 
         // 选取background开头的属性
@@ -76,13 +79,15 @@ var getBkInfo = function (rules) {
             switch (declaration.property) {
                 case 'background':
 
+
+                    var positionValue = /\s*(left|center|right|-?\d*px|0)?\s+(top|bottom|center|-?\d*px|0)\s*/.exec(value);
+
                     background = {
                         'background-image': (/\s*(url\(.*?\))\s*/.exec(value) || [])[1] || '',
                         'background-color': (/\s*(#[0-9a-fA-F]*|rgba\(.*?\))\s*/.exec(value) || [])[1] || '',
-                        'background-position': (/\s*((left|center|right|\d*px|0)?)\s*(top|bottom|center|\d*px|0)\s*/.exec(value) || [])[1] || '0 0',
+                        'background-position': positionValue && (positionValue[1] + ' ' + positionValue[2]) || '0 0',
                         'background-repeat': (/(repeat-x|repeat-y|no-repeat|repeat)/.exec(value) || [])[1] || ''
                     };
-
                     break;
                 default:
 
@@ -112,20 +117,23 @@ var getBkInfo = function (rules) {
             var properties = analyseOptions(background, options);
 
             if (!(properties.repeatX || properties.repeatY || properties.nocombine)) {
+                url = url.replace(/\?.*/g, '');
+
                 _.each(bkgrdDcrs, function (declaration) {
                     rule.declarations.splice(rule.declarations.indexOf(declaration), 1);
                 });
                 
-                bkInfos.push({
-                    url: url.replace(/\?.*/g, ''),
+                var imgInfo = {
+                    url: url,
                     rule: rule,
                     properties: properties
-                });
+                };
+
+                imgInfos.push(imgInfoHandler(imgInfo, filePath));
             }
         }
     });
-
-    return bkInfos;
+    return imgInfos;
 };
 
 /**
@@ -174,10 +182,10 @@ var analyseOptions = function (background, options) {
     _.each(options, function (option) {
 
         // e.g. 15*16 确定容器大小
-        if(/\d*\*\d*/.test(option)) {
+        if(/(\d*)\*(\d*)/.test(option)) {
             properties.dimension = {
-                width: option.split('*')[0] - 0,
-                height: option.split('*')[1] - 0
+                width: RegExp.$1 - 0,
+                height: RegExp.$2 - 0
             };
         }
         // 不合并
@@ -202,11 +210,61 @@ var analyseOptions = function (background, options) {
         else {
             // todo..
         }
-
     });
+
     return properties;
 };
 
+var imgInfoHandler = function (imgInfo, filePath) {
+
+    var imgPath = path.resolve(filePath, '../', imgInfo.url);
+    var originDimension = sizeOf(imgPath);
+
+    var properties = imgInfo.properties;
+    var dimension = properties.dimension || originDimension;
+
+    imgInfo.path = imgPath;
+    imgInfo.originWidth = originDimension.width;
+    imgInfo.originHeight = originDimension.height;
+
+    imgInfo.width = dimension.width;
+    imgInfo.height = dimension.height;
+
+    var x = (imgInfo.properties.position && imgInfo.properties.position.x) || 0;
+    var y = (imgInfo.properties.position && imgInfo.properties.position.y) || 0;
+
+    if (x == 'left') {
+        x = 0;
+    }
+    else if (x == 'center') {
+        x = parseInt((imgInfo.width - imgInfo.originWidth) / 2, 10);
+    }
+    else if (x == 'right') {
+        x = imgInfo.width - imgInfo.originWidth;
+    }
+    else {
+        x = parseInt(x);
+    }
+
+    if (y == 'top') {
+        y = 0;
+    }
+    else if (y == 'center') {
+        y = parseInt((imgInfo.height - imgInfo.originHeight) / 2, 10);
+    }
+    else if (y == 'bottom') {
+        y = imgInfo.height - imgInfo.originHeight;
+    }
+    else {
+        y = parseInt(y);
+    }
+    
+    imgInfo.position = {};
+    imgInfo.position.x = x;
+    imgInfo.position.y = y;
+
+    return imgInfo;
+};
 
 exports.analyseCss = analyseCss;
 exports.analyseCssData = analyseCssData

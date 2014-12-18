@@ -19,63 +19,33 @@ function combine(imgInfos, path) {
         var png = createFitPng(imgInfos);
 
         imgInfos.forEach(function(imgInfo) {
-            var x = (imgInfo.properties.position && imgInfo.properties.position.x) || 0;
-            var y = (imgInfo.properties.position && imgInfo.properties.position.y) || 0;
 
-            if (x == 'left') {
-                x = 0;
-            }
-            else if (x == 'center') {
-                x = parseInt((imgInfo.width - imgInfo.originWidth) / 2, 10);
-            }
-            else if (x == 'right') {
-                x = imgInfo.width - imgInfo.originWidth;
-            }
-            else {
-                x = parseInt(x) - 0;
-            }
-
-            if (y == 'top') {
-                y = 0;
-            }
-            else if (y == 'center') {
-                y = parseInt((imgInfo.height - imgInfo.originHeight) / 2, 10);
-            }
-            else if (y == 'bottom') {
-                y = imgInfo.height - imgInfo.originHeight;
-            }
-            else {
-                y = parseInt(y) - 0;
-            }
-
-            imgInfo.x = imgInfo.fit.x;
-            imgInfo.y = imgInfo.fit.y;
-
-            var width;
-            if (imgInfo.width >= (imgInfo.originWidth + x)) {
-                width = imgInfo.originWidth;
-            }
-            else {
-                width = imgInfo.width - x;
-            }
-
-            var height;
-            if (imgInfo.height >= (imgInfo.originHeight + y)) {
-                height = imgInfo.originHeight;
-            }
-            else {
-                height = imgInfo.height - y;
-            }
-
-            x += (imgInfo.fit.x);
-            y += (imgInfo.fit.y);
-            
             // 对图片进行填充
             imgInfo.image.bitblt(
                 png,
-                0, 0, 
-                width, height,
-                x, y
+                imgInfo.position.x > 0 ? 0 : -imgInfo.position.x,
+                imgInfo.position.y > 0 ? 0 : -imgInfo.position.y,
+                imgInfo.position.x > 0 
+                ? (
+                    imgInfo.width - imgInfo.position.x > imgInfo.originWidth 
+                    ? imgInfo.originWidth : imgInfo.width - imgInfo.position.x
+                )
+                : (
+                    imgInfo.width - imgInfo.position.x > imgInfo.originWidth 
+                    ? imgInfo.originWidth + imgInfo.position.x : imgInfo.width
+                ),
+                imgInfo.position.y > 0 
+                ? (
+                    imgInfo.height - imgInfo.position.y > imgInfo.originHeight 
+                    ? imgInfo.originHeight : imgInfo.height - imgInfo.position.y
+                )
+                : (
+                    imgInfo.height - imgInfo.position.y > imgInfo.originHeight 
+                    ? imgInfo.originHeight + imgInfo.position.y : imgInfo.height 
+                ),
+                
+                imgInfo.position.x > 0 ? imgInfo.fit.x + imgInfo.position.x : imgInfo.fit.x,
+                imgInfo.position.y > 0 ? imgInfo.fit.y + imgInfo.position.y : imgInfo.fit.y
             );
         });
 
@@ -86,6 +56,7 @@ function combine(imgInfos, path) {
         imgWriteStream.on('finish', function () {
             promise.resolve(imgInfos);
         });
+
         imgReadStream.pipe(imgWriteStream);
     });
 
@@ -126,7 +97,6 @@ var createAllPngs = function (imgInfos) {
 
     return promise.promise;
 }
-
 
 /**
  * 创建一个合适尺寸的 png 图片
@@ -171,8 +141,8 @@ function createFitPng(imgInfos) {
 function createPng(width, height) {
     // 创建一张定宽定高的png图片
     var png = new PNG({
-        width: width,
-        height: height
+        width: width + 10,
+        height: height + 10
     });
 
     // 必须把图片的所有像素都设置为 0, 否则会出现一些随机的噪点

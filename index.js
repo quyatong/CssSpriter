@@ -3,51 +3,30 @@ var analyser = require('./libs/analyser');
 var combine  = require('./libs/combine');
 var convert  = require('./libs/convert');
 var nesting  = require('./libs/nesting');
-var convertToPng8  = require('./libs/convertToPng8');
 var cssCreator = require('./libs/cssCreator');
 var path = require('path');
 var when = require('when');
 
+
+
 /**
- * CssSpriter
+ * 根据css文件数据做CSS SPRITE
  * 
- * @param  {String}     path     路径
- * @param  {String}     path     路径
- * @return {Promise}             promise
+ * @param  {string} cssData  css 数据
+ * @param  {string} filePath 文件路径
+ * @return {Promise}                    promise
  */
-var CssSpriter = function (filePath, newFilePath) {
-    var promise = when.defer();
-    var cssData = fs.readFileSync(filePath, {encoding: 'utf8'});
-
-    CssSpriter.analyseCss(cssData, filePath).then(function (data) {
-        // 生成css文件
-        cssCreator.cssCreator(data.ast, data.imgInfos, newFilePath, data.imgFileName);
-
-        // 将图片的信息告诉外界
-        promise.resolve(data.imgInfos);
-        
-    }, function () {
-
-        promise.reject();
-    });
-
-    return promise.promise;
-};
-
-CssSpriter.analyseCss = function (cssData, filePath) {
+var cssDataSpriter = function (cssData, filePath) {
     var promise = when.defer();
 
     // 分析css文件，获取有背景的node
-    var ast = analyser.analyseCssData(cssData);
-    var bkInfos = ast.bkInfos;
+    var options = analyser.analyseCssData(cssData, filePath);
+    var ast = options.ast;
+    var imgInfos = options.imgInfos;
 
     // 根据bkInfos生成imgInfos
-    var imgInfos = nesting(convert(bkInfos, filePath));
-
-    // 根据bkInfos生成imgInfos
-    var imgInfos = nesting(convert(bkInfos, filePath));
-    var imgFileName = path.basename(filePath, path.extname(filePath));
-    imgFileName = 'sprite-' + imgFileName + '.png';
+    var imgInfos = nesting(imgInfos);
+    var imgFileName = 'sprite-' + path.basename(filePath, path.extname(filePath)) + '.png';
     var imgFilePath = path.dirname(filePath)+ '/' + imgFileName;
 
     if (!imgInfos.length) {
@@ -71,6 +50,40 @@ CssSpriter.analyseCss = function (cssData, filePath) {
     return promise.promise;
 };
 
+/**
+ * CssSpriter
+ * 
+ * @param  {string}     filePath        css路径
+ * @param  {string}     newFilePath     css新文件路径
+ * @return {Promise}                    promise
+ */
+var cssSpriter = function (filePath, newFilePath) {
+    var promise = when.defer();
+    var cssData = fs.readFileSync(filePath, {encoding: 'utf8'});
+
+    cssDataSpriter(
+        cssData, filePath
+    ).then(
+        function (data) {
+
+            data.newFilePath = newFilePath;
+
+            // 生成css文件
+            cssCreator.cssCreator(data.ast, data.imgInfos, newFilePath, data.imgFileName);
+
+            // 将图片的信息告诉外界
+            promise.resolve(data);
+        }, 
+        function () {
+            promise.reject();
+        }
+    );
+
+    return promise.promise;
+};
 
 
-module.exports = exports = CssSpriter;
+module.exports = {
+    cssSpriter: cssSpriter,
+    cssDataSpriter: cssDataSpriter
+};

@@ -9,11 +9,20 @@ var GrowingPacker = require('../utils/bin-packing.js');
  */
 var nesting = function (imgInfos) {
 
+    var hashCode = function (item) {
+        return [
+            item.path,
+            item.width,
+            item.height,
+            item.position.x,
+            item.position.y
+        ].join('-');
+    };
     // 复制 去重 排序
     var nestingImgInfos = _.chain([])
         .extend(imgInfos)
         .uniq(function (item) {
-            return item.path;
+            return hashCode(item);
         })
         .sortBy(function (item) {
             return -item.height;
@@ -26,14 +35,15 @@ var nesting = function (imgInfos) {
     // 将去重后的排序结果回归到原有图片信息数组中
     _.each(nestingImgInfos, function (nestingImg) {
 
-        var samePathImgs = _.where(imgInfos, {path: nestingImg.path});
+        var samePathImgs = _.filter(imgInfos, function (item) {
+            return hashCode(item) == hashCode(nestingImg);
+        });
 
         // 对相同引用路径的图片，
         samePathImgs.forEach(function (samePathImg) {
             samePathImg.fit = nestingImg.fit;
         });
     });
-
     return imgInfos;
 };
 

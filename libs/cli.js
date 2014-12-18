@@ -25,5 +25,5 @@ exports.parse = function ( args ) {
     var filePath = path.resolve(args[0]);
     var newFilePath = (args[1] && path.resolve(args[1])) || filePath;
 
-    CssSpriter(filePath, newFilePath);
+    CssSpriter.cssSpriter(filePath, newFilePath);
 };
