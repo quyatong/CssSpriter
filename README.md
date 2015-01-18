@@ -3,7 +3,7 @@ CssSpriter
 
 Css Sprite Tool
 
-It is a can parse CSS file, generate Sprite map and a new CSS file tool.
+It is a tool what can analyze CSS file and generate sprite map.
 
 ###Command Line
 
