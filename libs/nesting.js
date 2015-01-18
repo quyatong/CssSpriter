@@ -1,9 +1,14 @@
+/**
+ * @file 排料
+ * @author quyatong <quyatong@baidu.com>
+ */
+
 var _ = require('underscore');
 var GrowingPacker = require('../utils/bin-packing.js');
 
 /**
  * 矩形排料
- * 
+ *
  * @param  {Array} imgInfos 图片信息数组
  * @return {Array} imgInfos 图片信息数组(已排料好的)
  */
@@ -18,6 +23,7 @@ var nesting = function (imgInfos) {
             item.position.y
         ].join('-');
     };
+
     // 复制 去重 排序
     var nestingImgInfos = _.chain([])
         .extend(imgInfos)
@@ -36,7 +42,7 @@ var nesting = function (imgInfos) {
     _.each(nestingImgInfos, function (nestingImg) {
 
         var samePathImgs = _.filter(imgInfos, function (item) {
-            return hashCode(item) == hashCode(nestingImg);
+            return hashCode(item) === hashCode(nestingImg);
         });
 
         // 对相同引用路径的图片，
@@ -44,6 +50,7 @@ var nesting = function (imgInfos) {
             samePathImg.fit = nestingImg.fit;
         });
     });
+
     return imgInfos;
 };
 

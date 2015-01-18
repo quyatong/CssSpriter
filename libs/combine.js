@@ -1,75 +1,20 @@
+/**
+ * @file 合并图片
+ * @author quyatong <quyatong@baidu.com>
+ */
+
 var when = require('when');
 var _ = require('underscore');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 
 /**
- * 合并图片
- * 
- * @param  {Array}   imgInfos   图片数组
- * @param  {String}  path       雪碧图生成路径
- * @param  {Promise}            Promise对象
- */
-function combine(imgInfos, path) {
-    var promise = when.defer();
-
-    // 将所有图片写入内存
-    createAllPngs(imgInfos).then(function (imgInfos) {
-        // 根据一组数组的大小创建适合宽高的png图片
-        var png = createFitPng(imgInfos);
-
-        imgInfos.forEach(function(imgInfo) {
-
-            // 对图片进行填充
-            imgInfo.image.bitblt(
-                png,
-                imgInfo.position.x > 0 ? 0 : -imgInfo.position.x,
-                imgInfo.position.y > 0 ? 0 : -imgInfo.position.y,
-                imgInfo.position.x > 0 
-                ? (
-                    imgInfo.width - imgInfo.position.x > imgInfo.originWidth 
-                    ? imgInfo.originWidth : imgInfo.width - imgInfo.position.x
-                )
-                : (
-                    imgInfo.width - imgInfo.position.x > imgInfo.originWidth 
-                    ? imgInfo.originWidth + imgInfo.position.x : imgInfo.width
-                ),
-                imgInfo.position.y > 0 
-                ? (
-                    imgInfo.height - imgInfo.position.y > imgInfo.originHeight 
-                    ? imgInfo.originHeight : imgInfo.height - imgInfo.position.y
-                )
-                : (
-                    imgInfo.height - imgInfo.position.y > imgInfo.originHeight 
-                    ? imgInfo.originHeight + imgInfo.position.y : imgInfo.height 
-                ),
-                
-                imgInfo.position.x > 0 ? imgInfo.fit.x + imgInfo.position.x : imgInfo.fit.x,
-                imgInfo.position.y > 0 ? imgInfo.fit.y + imgInfo.position.y : imgInfo.fit.y
-            );
-        });
-
-        var imgReadStream = png.pack();
-        var imgWriteStream = fs.createWriteStream(path);
-
-        // 生成图片
-        imgWriteStream.on('finish', function () {
-            promise.resolve(imgInfos);
-        });
-
-        imgReadStream.pipe(imgWriteStream);
-    });
-
-    return promise.promise;
-}
-
-/**
  * 创建所有的图像
- * 
+ *
  * @param  {Array}    imgInfos   图片信息数组
  * @return {Promise}             Promise对象
  */
-var createAllPngs = function (imgInfos) {
+function createAllPngs(imgInfos) {
     var promise = when.defer();
     var promises = [];
 
@@ -100,7 +45,7 @@ var createAllPngs = function (imgInfos) {
 
 /**
  * 创建一个合适尺寸的 png 图片
- * 
+ *
  * @param  {Array}  imgInfos    图片对象数组
  * @return {Object}             png图片对象
  */
@@ -108,7 +53,7 @@ function createFitPng(imgInfos) {
 
     // 最右边
     var rightRect = _.max(
-        imgInfos, 
+        imgInfos,
         function (imgInfo) {
             return imgInfo.fit.x + imgInfo.width;
         }
@@ -116,8 +61,8 @@ function createFitPng(imgInfos) {
 
     // 最底部
     var bottomRect = _.max(
-        imgInfos, 
-        function (imgInfo) { 
+        imgInfos,
+        function (imgInfo) {
             return imgInfo.fit.y + imgInfo.height;
         }
     );
@@ -133,9 +78,9 @@ function createFitPng(imgInfos) {
 
 /**
  * 创建一个 png 图片
- * 
- * @param  {Number} width   宽度
- * @param  {Number} height  高度
+ *
+ * @param  {number} width   宽度
+ * @param  {number} height  高度
  * @return {Object}         png图片对象
  */
 function createPng(width, height) {
@@ -156,7 +101,73 @@ function createPng(width, height) {
             png.data[idx + 3] = 0;
         }
     }
+
     return png;
 }
 
+/**
+ * 合并图片
+ *
+ * @param   {Array}   imgInfos   图片数组
+ * @param   {string}  path       雪碧图生成路径
+ * @return  {Promise}            Promise对象
+ */
+function combine(imgInfos, path) {
+    var promise = when.defer();
+
+    // 将所有图片写入内存
+    createAllPngs(imgInfos).then(function (imgInfos) {
+
+        // 根据一组数组的大小创建适合宽高的png图片
+        var png = createFitPng(imgInfos);
+
+        imgInfos.forEach(function (imgInfo) {
+
+            // 对图片进行填充
+            imgInfo.image.bitblt(
+                png,
+                imgInfo.position.x > 0 ? 0 : -imgInfo.position.x,
+                imgInfo.position.y > 0 ? 0 : -imgInfo.position.y,
+                imgInfo.position.x > 0
+                ? (
+                    imgInfo.width - imgInfo.position.x > imgInfo.originWidth
+                    ? imgInfo.originWidth : imgInfo.width - imgInfo.position.x
+                )
+                : (
+                    imgInfo.width - imgInfo.position.x > imgInfo.originWidth
+                    ? imgInfo.originWidth + imgInfo.position.x : imgInfo.width
+                ),
+                imgInfo.position.y > 0
+                ? (
+                    imgInfo.height - imgInfo.position.y > imgInfo.originHeight
+                    ? imgInfo.originHeight : imgInfo.height - imgInfo.position.y
+                )
+                : (
+                    imgInfo.height - imgInfo.position.y > imgInfo.originHeight
+                    ? imgInfo.originHeight + imgInfo.position.y : imgInfo.height
+                ),
+
+                imgInfo.position.x > 0 ? imgInfo.fit.x + imgInfo.position.x : imgInfo.fit.x,
+                imgInfo.position.y > 0 ? imgInfo.fit.y + imgInfo.position.y : imgInfo.fit.y
+            );
+        });
+
+        var imgReadStream = png.pack();
+        var imgWriteStream = fs.createWriteStream(path);
+
+        // 生成图片
+        imgWriteStream.on('finish', function () {
+            promise.resolve(imgInfos);
+        });
+
+        imgReadStream.pipe(imgWriteStream);
+    });
+
+    return promise.promise;
+}
+
+
+
+
 module.exports = exports = combine;
+
