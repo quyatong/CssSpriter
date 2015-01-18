@@ -11,13 +11,13 @@ var cssHandler = function (ast, imgInfos, imgFilePath) {
         imgInfo.rule.declarations.push(
             {
                 "type": "declaration",
-                "property": "background-image",
-                "value": 'url("' + imgFilePath + '#' + imgInfo.width + '*' + imgInfo.height + '?ver=' + version + '")'
-            },            
-            {
-                "type": "declaration",
-                "property": "background-position",
-                "value": '-' + imgInfo.fit.x + 'px ' + '-' + imgInfo.fit.y + 'px'
+                "property": "background",
+                "value": [
+                    'url("' + imgFilePath + '#' + imgInfo.width + '*' + imgInfo.height + '?ver=' + version + '")',
+                    '-' + imgInfo.fit.x + 'px ' + '-' + imgInfo.fit.y + 'px',
+                    imgInfo.background['background-repeat'] || '',
+                    imgInfo.background['background-color'] || ''
+                ].join(' ')
             }
         );
     });

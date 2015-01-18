@@ -101,13 +101,12 @@ var getImgInfos = function (rules, filePath) {
 
         if (bkimg && /\s*url\(\s*(['"]?)(.*?)\1\s*\)\s*/.test(bkimg)) {
 
-            var url = /\s*url\(\s*(['"]?)(.*?)\1\s*\)\s*/.exec(bkimg)[2];
+            var url = /\s*url\(\s*(['"]?)(.*?)\1\s*\)\s*/.exec(bkimg)[2].replace(/#.*/g, '');
             
-            if (/http/.test(url) || /^\/\//.test(url)) {
+            if (/http/.test(url) || /^\/\//.test(url) || !/\.png$/.test(url)) {
                 return;
             }
 
-            url = url.replace(/#.*/g, '');
             var options = [];
             optionStr.replace(/#([^#]*)/g, function (match, option) {
                 options.push(option);
@@ -126,7 +125,8 @@ var getImgInfos = function (rules, filePath) {
                 var imgInfo = {
                     url: url,
                     rule: rule,
-                    properties: properties
+                    properties: properties,
+                    background: background
                 };
 
                 imgInfos.push(imgInfoHandler(imgInfo, filePath));
